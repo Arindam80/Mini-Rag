@@ -244,8 +244,7 @@ The system handles multiple file formats:
 For questions or issues regarding this implementation, please contact through:
 
 - **GitHub Issues:** [Repository Issues](https://github.com/Arindam80/Mini-Rag/issues)
-- **LinkedIn:** [Arindam Mondal](#)
+- **LinkedIn:** [Arindam Mondal](https://www.linkedin.com/messaging/compose/?recipient=arindam-mondal-305bb725b)
 
 ---
 
-**Built with ❤️ by Arindam Mondal**
