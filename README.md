@@ -4,7 +4,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100-009688?style=for-the-badge&logo=fastapi)
 ![RAG](https://img.shields.io/badge/RAG-Advanced-FF6B6B?style=for-the-badge)
 
-📂 [GitHub Repository](https://github.com/Arindam80/Mini-Rag.git) | 👨‍💻 [My LinkedIn Profile](#) | 📄 [Resume Link](#)
+📂 [GitHub Repository](https://github.com/Arindam80/Mini-Rag.git) | 👨‍💻 [My LinkedIn Profile](https://www.linkedin.com/in/arindam-mondal-305bb725b/) | 📄 [Resume Link](https://drive.google.com/file/d/18ufWn8vtKXpBXkmBFhTiHttmIBW_njOM/view?usp=drive_link)
 
 ## 📋 Submission Checklist
 
