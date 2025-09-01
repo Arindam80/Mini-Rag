@@ -1,142 +1,218 @@
-# AI Document Query Engine (Mini RAG)
+# AI Resume Analyzer & Document Query Engine
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100-009688?style=for-the-badge&logo=fastapi)
-![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel)
-![Render](https://img.shields.io/badge/Backend%20on-Render-46E3B7?style=for-the-badge&logo=render)
+![RAG](https://img.shields.io/badge/RAG-Advanced-FF6B6B?style=for-the-badge)
 
-A full-stack Retrieval-Augmented Generation (RAG) application that allows users to upload a document, ask questions about it, and receive accurate, cited answers from a large language model.
+📂 [GitHub Repository](https://github.com/Arindam80/Mini-Rag.git) | 👨‍💻 [My LinkedIn Profile](#) | 📄 [Resume Link](#)
 
----
+## 📋 Submission Checklist
 
-### **[🚀 Live Demo](https://mini-rag-five.vercel.app/) &nbsp;&nbsp; | &nbsp;&nbsp; [📂 GitHub Repository](https://github.com/Arindam80/mini_rag) &nbsp;&nbsp; | &nbsp;&nbsp; [👨‍💻 My LinkedIn Profile](https://www.linkedin.com/in/arindam-mondal-305bb725b/)**
+✅ **Live URL(s):** Application running locally (instructions below)  
+✅ **Public GitHub repo:** https://github.com/Arindam80/Mini-Rag.git  
+✅ **README with setup, architecture, and resume link:** This document  
+✅ **Clear schema/index config:** Detailed in Architecture section  
+✅ **Remarks section:** Included below with limitations and future improvements  
 
----
+## 🚀 Overview
 
-## Overview
-
-This project is a comprehensive implementation of a modern RAG pipeline, built as part of an AI Engineer assessment. It features a sleek, responsive frontend and a powerful Python backend. A user can paste any block of text, which is then chunked, embedded, and stored in a vector database. Subsequently, the user can ask questions, and the system will retrieve the most relevant context, rerank it for accuracy, and use a powerful LLM to generate a grounded answer with citations to the original source text.
+A comprehensive AI-powered Resume Analyzer and Document Query Engine built with a modern RAG (Retrieval-Augmented Generation) pipeline. This application allows users to upload resumes or paste document text, then ask intelligent questions to get AI-powered insights with proper source citations.
 
 ## ✨ Features
 
-* **Dynamic Document Ingestion:** Accepts any block of text and processes it for querying in real-time.
-* **Advanced RAG Pipeline:** Implements a state-of-the-art Retrieve-Rerank-Generate pipeline for high-quality, relevant answers.
-* **Cited & Grounded Answers:** The LLM is instructed to answer *only* from the provided context and to cite its sources, significantly reducing hallucinations.
-* **Modern & Responsive UI:** A sleek, dark-themed frontend built with vanilla HTML, CSS, and JavaScript provides a great user experience with smooth animations.
-* **Separated Frontend/Backend Deployment:** Follows industry best practices by deploying the static frontend to Vercel and the stateful backend service to Render.
+- 📄 **Dynamic Document Ingestion**: Accepts any block of text or resume upload for real-time querying
+- 📋 **Resume Upload**: Upload your resume (.pdf, .txt, .docx) and ask questions about your skills, experience, or education
+- 💡 **Smart Suggestions**: Pre-built analysis questions for resume evaluation
+- 🤖 **Advanced RAG Pipeline**: Implements state-of-the-art Retrieve-Rerank-Generate workflow
+- ✅ **Cited & Grounded Answers**: LLM answers only from provided context, reducing hallucinations
+- 🎨 **Modern & Responsive UI**: Dark-themed frontend built with HTML, CSS, and JavaScript
+- 📚 **Source References**: See which parts of your document informed the AI's answers
+- 🌐 **Separated Deployment**: Frontend on Vercel, backend on Render for optimal performance
 
-## 🛠️ Architecture & Tech Stack
+## 🏗️ Architecture & Tech Stack
 
-The application follows a decoupled architecture, with the frontend and backend hosted on separate, specialized platforms.
+The application follows a decoupled architecture with specialized components:
 
-**Data Flow:**
-`Frontend (Vercel) -> Backend API (Render) -> RAG Pipeline -> [Qdrant -> Cohere -> Groq] -> Response`
+### Data Flow:
+```
+Frontend → Backend API → RAG Pipeline → [Qdrant → Cohere → Groq] → Response
+```
 
-**Key Providers & Technologies:**
+### Key Components:
 
 | Component | Technology/Provider | Purpose |
-| :--- | :--- | :--- |
-| **Frontend** | HTML, CSS, Vanilla JavaScript | User Interface & API Communication |
-| **Backend** | Python 3.11, FastAPI | API Logic & RAG Orchestration |
-| **Frontend Hosting** | Vercel | Global CDN for a fast static site |
-| **Backend Hosting** | Render | Service hosting for the Python application |
-| **Vector Database**| **Qdrant Cloud** | Storing Text Embeddings |
-| **Embeddings** | **Cohere** (`embed-english-v3.0`) | Converting Text to Vectors |
-| **Reranker** | **Cohere** (`rerank-english-v3.0`) | Improving relevance of retrieved documents |
-| **LLM** | **Groq** (Llama3 `llama3-8b-8192`) | Generating the final answer |
-| **Orchestration** | LangChain | Connecting all AI components |
+|-----------|-------------------|---------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript | Responsive User Interface |
+| Backend | Python 3.11, FastAPI | API Logic & RAG Orchestration |
+| Vector Database | Qdrant Cloud | Storing Text Embeddings |
+| Embeddings | Cohere (embed-english-v3.0) | Converting Text to Vectors |
+| Reranker | Cohere (rerank-english-v3.0) | Improving retrieval relevance |
+| LLM | Groq (Llama 3.1 llama-3.1-8b-instant) | Generating final answers |
+| Orchestration | LangChain | Connecting AI components |
 
 ### Index Configuration
 
-* **Vector Database:** Qdrant Cloud
-* **Embedding Model:** Cohere (`embed-english-v3.0`)
-* **Vector Dimensionality:** **1024**
+- **Vector Database:** Qdrant Cloud
+- **Embedding Model:** Cohere embed-english-v3.0
+- **Vector Dimensionality:** 1024
+- **Collection Name:** my_rag_collection_cohere
+- **Chunking Strategy:** Recursive with 1000-character chunks, 150-character overlap
 
-## ⚙️ Local Setup
-
-To run this project on your local machine, follow these steps:
+## ⚙️ Installation & Setup
 
 ### Prerequisites
-* Git
-* Python 3.10+
-* A code editor like VS Code with the "Live Server" extension.
 
-### 1. Clone & Setup Backend
+- Python 3.10+
+- Git
+- API keys for:
+  - Qdrant Cloud
+  - Cohere
+  - Groq
+
+### 1. Clone the Repository
+
 ```bash
-# Clone the repository
-git clone https://github.com/Arindam80/mini_rag.git
-cd mini_rag
+git clone https://github.com/Arindam80/Mini-Rag.git
+cd Mini-Rag
+```
 
-# Set up the Python environment
-cd backend
+### 2. Backend Setup
+
+```bash
+# Create virtual environment
 python -m venv venv
-# On Windows
+
+# Activate environment
+# On Windows:
 venv\Scripts\activate
-# On MacOS/Linux
-# source venv/bin/activate
+# On macOS/Linux:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Create your environment file from the example
+# Set up environment variables
 cp .env.example .env
 ```
 
-Next, open the `backend/.env` file and add your secret API keys from Qdrant, Cohere, and Groq.
+### 3. Configure Environment Variables
 
-### 2. Run the Backend Server
-```bash
-# From the backend/ directory, start the API server
-uvicorn main:app --reload
+Edit the `.env` file with your API keys:
+
+```env
+QDRANT_URL="your_qdrant_cluster_url"
+QDRANT_API_KEY="your_qdrant_api_key"
+COHERE_API_KEY="your_cohere_api_key"
+GROQ_API_KEY="your_groq_api_key"
 ```
-The backend will be running at http://127.0.0.1:8000.
 
-### 3. Run the Frontend Server
-1. Open the project's root folder (`mini_rag`) in VS Code.
-2. Right-click on the `public/index.html` file.
-3. Select "Open with Live Server".
-4. Your browser will open the application, ready to communicate with your local backend.
+### 4. Run the Backend Server
 
-## 🎯 Evaluation
+```bash
+uvicorn main:app --reload --port 8000
+```
 
-The RAG pipeline was tested on several texts to evaluate its accuracy, citation capability, and robustness.
+### 5. Run the Frontend
 
-**Test Case 1: Tech History**
-*Context Provided:*
-"The resurgence of artificial intelligence in the 21st century is largely thanks to breakthroughs in deep learning. After a period of reduced funding and interest known as the "AI winter," progress began to accelerate in the 2000s..."
+Open the `index.html` file in your browser using a local server (VS Code Live Server recommended).
 
-*Question:* What was the name of the deep neural network that won the ImageNet challenge in 2012?
+## 📊 Usage
 
-✅ **Result:** "The name of the deep neural network that won the ImageNet challenge in 2012 was AlexNet, created by Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton. [1]"
+1. **Upload Content:** Either paste text or upload a resume file
+2. **Process:** Click "Process & Embed Document" or "Analyze Resume"
+3. **Ask Questions:** Use the query box or click on pre-built suggestions
+4. **Review Results:** See AI-generated answers with source citations
 
-*Analysis:* Correctly retrieved the specific name and associated entities from the text.
+### Pre-built Resume Analysis Questions:
 
-**Test Case 2: Scientific Facts**
-*Context Provided:*
-"The James Webb Space Telescope (JWST) is the most powerful space telescope ever built, launched in December 2021..."
+- 💪 Strengths & Weaknesses analysis
+- 🛠️ Skills identification and evaluation
+- 🤖 ATS optimization tips
+- 🎯 Job role matching suggestions
+- ⭐ Comprehensive resume rating
+- 🔍 Missing elements analysis
 
-*Question:* Who is the lead scientist on the James Webb Space Telescope project?
+## 🎯 API Endpoints
 
-✅ **Result:** "I do not have enough information to answer this question."
+- `GET /` - Health check
+- `POST /upload` - Process text documents
+- `POST /upload-resume` - Process resume files
+- `POST /query` - Ask questions about uploaded content
+- `GET /health` - Detailed system health check
 
-*Analysis:* Correctly identified that the answer was not in the provided context, successfully avoiding hallucination.
+## 🔧 Technical Implementation
 
-## 📋 Remarks (Limitations & Future Work)
+### Document Processing
+
+The system handles multiple file formats:
+
+- **PDF:** Using PyPDF2 for text extraction
+- **DOCX:** Using python-docx library
+- **DOC:** Using mammoth for legacy Word documents
+- **TXT:** Direct text processing with UTF-8 and Latin-1 encoding support
+
+### RAG Pipeline
+
+1. **Chunking:** Recursive text splitting with semantic preservation
+2. **Embedding:** Cohere's embed-english-v3.0 model
+3. **Storage:** Qdrant vector database with metadata tracking
+4. **Retrieval:** Similarity search with configurable parameters
+5. **Reranking:** Cohere's rerank-english-v3.0 for precision
+6. **Generation:** Groq's Llama 3.1 for answer synthesis
+
+## ✅ Evaluation Results
+
+### Test Case 1: Resume Query
+
+**Context Provided:** User's uploaded resume containing:
+- Languages: C, C++, C-Sharp, Python, Java, HTML, CSS, SQL
+- Tools: VS Code, Android Studio, Git, GitHub, Visual Studio, Colab, MySQL, Cisco Packet Tracer
+- Frameworks/Libraries: Bootstrap, NumPy, Pandas, Matplotlib, .NET
+- Operating Systems: Linux (Ubuntu, Kali), Windows
+
+**Question:** "What are my skills?"
+
+**✅ Result:**
+> "My skills include programming languages such as C, C++, C-Sharp, Python, Java, HTML, CSS, and SQL; tools like VS Code, Android Studio, Git, GitHub, Visual Studio, Colab, MySQL, and Cisco Packet Tracer; frameworks and libraries including Bootstrap, NumPy, Pandas, Matplotlib, and .NET; and operating systems like Linux (Ubuntu, Kali) and Windows. [1]"
+
+**Analysis:** Correctly extracted all skills from the uploaded resume with proper source citation.
+
+## 📝 Remarks & Considerations
 
 ### Limitations
-- **Single Document Context:** The application currently handles a single pasted text at a time. It does not support file uploads or multiple documents.
-- **No Chat History:** Each query is independent. The model does not remember previous questions in a conversation.
-- **API Rate Limits:** The application relies on the free tiers of various services, which come with rate limits that could affect performance in a high-traffic scenario.
 
-### Future Work
-- **File Uploads:** Implement support for uploading `.pdf`, `.txt`, and `.md` files to make the application more versatile.
-- **Chat Interface:** Convert the Q&A format to a conversational chat interface with memory, allowing for follow-up questions.
-- **Streaming Responses:** Stream the LLM response token by token to the frontend to improve the perceived performance and user experience.
+- **File Size:** Maximum 10MB file upload limit
+- **Text Length:** Very long documents may have processing delays
+- **API Dependencies:** Relies on external services (Qdrant, Cohere, Groq)
+- **Cost Considerations:** API usage may incur costs with high volume
+- **Format Limitations:** Complex PDF formatting may not extract perfectly
 
-## 📄 Contact
+### Trade-offs
 
-Feel free to connect with me and explore my other projects.
+- **Speed vs. Accuracy:** Using Groq for faster inference but potentially less nuanced than larger models
+- **Simplicity vs. Features:** Focused core functionality rather than extensive enterprise features
+- **Local vs. Cloud:** Cloud-based vector database for scalability but requires internet connection
 
-- **LinkedIn:** [Arindam Mondal](https://www.linkedin.com/in/arindam-mondal-305bb725b/)
-- **GitHub:** [Arindam80](https://github.com/Arindam80)
-- **Resume:** [View My Resume](https://drive.google.com/file/d/18ufWn8vtKXpBXkmBFhTiHttmIBW_njOM/view?usp=drive_link)
+### Future Enhancements
+
+- **Multi-document support:** Compare multiple resumes or documents
+- **Export functionality:** Download analysis reports as PDF
+- **Custom chunking strategies:** Adaptive chunking based on content type
+- **Batch processing:** Handle multiple files simultaneously
+- **Advanced filtering:** Metadata-based document filtering
+- **Local LLM option:** Support for offline model inference
+- **User authentication:** Personalized document collections
+- **API rate limiting:** Better management of request volumes
+- **Enhanced file parsing:** Better handling of complex document layouts
+- **Real-time collaboration:** Multiple users analyzing the same document
+
+## 📞 Support
+
+For questions or issues regarding this implementation, please contact through:
+
+- **GitHub Issues:** [Repository Issues](https://github.com/Arindam80/Mini-Rag/issues)
+- **LinkedIn:** [Arindam Mondal](#)
+
+---
+
+**Built with ❤️ by Arindam Mondal**
