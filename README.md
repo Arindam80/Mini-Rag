@@ -9,7 +9,7 @@ A full-stack Retrieval-Augmented Generation (RAG) application that allows users 
 
 ---
 
-### **[🚀 Live Demo](https://mini-rag-sepia.vercel.app/) &nbsp;&nbsp; | &nbsp;&nbsp; [📂 GitHub Repository](https://github.com/AditRajSrivastava/mini_rag) &nbsp;&nbsp; | &nbsp;&nbsp; [👨‍💻 My LinkedIn Profile](https://linkedin.com/in/aditya-raj-srivastava-2570a7254/)**
+### **[🚀 Live Demo](https://mini-rag-five.vercel.app/) &nbsp;&nbsp; | &nbsp;&nbsp; [📂 GitHub Repository](https://github.com/Arindam80/mini_rag) &nbsp;&nbsp; | &nbsp;&nbsp; [👨‍💻 My LinkedIn Profile](https://www.linkedin.com/in/arindam-mondal-305bb725b/)**
 
 ---
 
@@ -64,7 +64,7 @@ To run this project on your local machine, follow these steps:
 ### 1. Clone & Setup Backend
 ```bash
 # Clone the repository
-git clone https://github.com/AditRajSrivastava/mini_rag.git
+git clone https://github.com/Arindam80/mini_rag.git
 cd mini_rag
 
 # Set up the Python environment
@@ -137,5 +137,6 @@ The RAG pipeline was tested on several texts to evaluate its accuracy, citation 
 
 Feel free to connect with me and explore my other projects.
 
-- **LinkedIn:** [[linkedin.com/in/aditya-raj-srivastava-2570a7254/](https://www.linkedin.com/in/arindam-mondal-305bb725b/)]
-- **GitHub:** [[github.com/Arindam80](https://github.com/Arindam80)]
+- **LinkedIn:** [Arindam Mondal](https://www.linkedin.com/in/arindam-mondal-305bb725b/)
+- **GitHub:** [Arindam80](https://github.com/Arindam80)
+- **Resume:** [View My Resume](https://drive.google.com/file/d/18ufWn8vtKXpBXkmBFhTiHttmIBW_njOM/view?usp=drive_link)
