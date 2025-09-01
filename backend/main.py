@@ -233,7 +233,7 @@ async def query(data: QueryData):
 
         embeddings = CohereEmbeddings(cohere_api_key=os.getenv("COHERE_API_KEY"), model="embed-english-v3.0")
         llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.1-8b-instant", temperature=0)
-        reranker = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), top_n=5)
+        reranker = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), model="rerank-english-v3.0", top_n=5)
         
         vector_store = Qdrant(client=client, collection_name=QDRANT_COLLECTION_NAME, embeddings=embeddings)
         retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 10})
