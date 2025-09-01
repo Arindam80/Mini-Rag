@@ -11,3 +11,9 @@ langchain-text-splitters
 cohere
 groq
 qdrant-client
+
+# Added for document processing and file uploads
+PyPDF2
+python-docx
+mammoth
+python-multipart
