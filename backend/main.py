@@ -1,10 +1,7 @@
-
-
-
-
 import os
 import io
 import tempfile
+import traceback
 from dotenv import load_dotenv
 from typing import Optional
 
@@ -12,47 +9,26 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, VectorParams
 
 # Document Processing Imports
 import PyPDF2
 import docx
 import mammoth
-import traceback
 
 # LangChain Imports
-from langchain_cohere import CohereEmbeddings
+from langchain_cohere import CohereEmbeddings, CohereRerank
 from langchain_qdrant import QdrantVectorStore
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 from langchain.prompts import ChatPromptTemplate
-from langchain_cohere import CohereRerank
 from langchain_groq import ChatGroq
-from cohere import Client
-from langchain.retrievers import ContextualCompressionRetriever
 from langchain_community.vectorstores import Qdrant
 
 # Import specific Cohere error classes
 from cohere.errors import (
-    BadRequestError,
-    UnauthorizedError,
-    TooManyRequestsError,
-    InternalServerError,
-    ServiceUnavailableError,
-    NotFoundError,
-    ForbiddenError,
-    UnprocessableEntityError
-)
-
-# Create a tuple for catching multiple Cohere errors
-COHERE_ERRORS = (
-    BadRequestError,
-    UnauthorizedError,
-    TooManyRequestsError,
-    InternalServerError,
-    ServiceUnavailableError,
-    NotFoundError,
-    ForbiddenError,
-    UnprocessableEntityError
+    BadRequestError, UnauthorizedError, TooManyRequestsError, InternalServerError,
+    ServiceUnavailableError, NotFoundError, ForbiddenError, UnprocessableEntityError
 )
 
 # --- INITIAL SETUP ---
@@ -60,14 +36,24 @@ COHERE_ERRORS = (
 # Load environment variables from .env file
 load_dotenv()
 
+# Create a tuple for catching multiple Cohere errors
+COHERE_ERRORS = (
+    BadRequestError, UnauthorizedError, TooManyRequestsError, InternalServerError,
+    ServiceUnavailableError, NotFoundError, ForbiddenError, UnprocessableEntityError
+)
+
 # Instantiate the FastAPI app
-app = FastAPI(title="AI Resume Analyzer", description="Enhanced RAG system with resume analysis capabilities")
+app = FastAPI(
+    title="AI Resume Analyzer",
+    description="Enhanced RAG system with resume analysis capabilities"
+)
 
 # --- CORS MIDDLEWARE ---
+# CORRECTED: Removed trailing slash from Vercel URL for better matching.
 origins = [
+    "https://mini-rag-five.vercel.app",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "https://mini-rag-five.vercel.app/",
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
@@ -98,9 +84,7 @@ def extract_text_from_pdf(file_content: bytes) -> str:
     """Extract text from PDF file."""
     try:
         pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text() + "\n"
+        text = "".join(page.extract_text() + "\n" for page in pdf_reader.pages)
         return text.strip()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error reading PDF: {str(e)}")
@@ -109,9 +93,7 @@ def extract_text_from_docx(file_content: bytes) -> str:
     """Extract text from DOCX file."""
     try:
         doc = docx.Document(io.BytesIO(file_content))
-        text = ""
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + "\n"
+        text = "".join(paragraph.text + "\n" for paragraph in doc.paragraphs)
         return text.strip()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error reading DOCX: {str(e)}")
@@ -119,16 +101,8 @@ def extract_text_from_docx(file_content: bytes) -> str:
 def extract_text_from_doc(file_content: bytes) -> str:
     """Extract text from DOC file using mammoth."""
     try:
-        with tempfile.NamedTemporaryFile(suffix='.doc', delete=False) as tmp_file:
-            tmp_file.write(file_content)
-            tmp_file.flush()
-            
-            with open(tmp_file.name, 'rb') as f:
-                result = mammoth.extract_raw_text(f)
-                text = result.value
-            
-            os.unlink(tmp_file.name)  # Clean up temp file
-            return text.strip()
+        result = mammoth.extract_raw_text(io.BytesIO(file_content))
+        return result.value.strip()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error reading DOC: {str(e)}")
 
@@ -145,15 +119,14 @@ def extract_text_from_txt(file_content: bytes) -> str:
 def process_file(file_content: bytes, filename: str) -> str:
     """Process uploaded file and extract text based on file extension."""
     file_ext = os.path.splitext(filename)[1].lower()
-    
-    if file_ext == '.pdf':
-        return extract_text_from_pdf(file_content)
-    elif file_ext == '.docx':
-        return extract_text_from_docx(file_content)
-    elif file_ext == '.doc':
-        return extract_text_from_doc(file_content)
-    elif file_ext == '.txt':
-        return extract_text_from_txt(file_content)
+    handlers = {
+        '.pdf': extract_text_from_pdf,
+        '.docx': extract_text_from_docx,
+        '.doc': extract_text_from_doc,
+        '.txt': extract_text_from_txt,
+    }
+    if handler := handlers.get(file_ext):
+        return handler(file_content)
     else:
         raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_ext}")
 
@@ -161,37 +134,30 @@ def chunk_and_embed_text(text: str) -> int:
     """Chunk text and store embeddings in Qdrant."""
     try:
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000, 
+            chunk_size=1000,
             chunk_overlap=150,
             separators=["\n\n", "\n", ". ", "! ", "? ", " ", ""]
         )
         chunks = text_splitter.split_text(text)
         
-        # Create documents with metadata
         documents = [
-            Document(
-                page_content=chunk, 
-                metadata={
-                    "position": i + 1,
-                    "chunk_length": len(chunk),
-                    "source_type": "uploaded_document"
-                }
-            ) 
+            Document(page_content=chunk, metadata={"position": i + 1})
             for i, chunk in enumerate(chunks)
         ]
         
         embeddings = CohereEmbeddings(
-            cohere_api_key=os.getenv("COHERE_API_KEY"), 
+            cohere_api_key=os.getenv("COHERE_API_KEY"),
             model="embed-english-v3.0"
         )
         
+        # Using QdrantVectorStore creates the collection and adds documents
         QdrantVectorStore.from_documents(
             documents,
             embeddings,
             url=os.getenv("QDRANT_URL"),
             api_key=os.getenv("QDRANT_API_KEY"),
             collection_name=QDRANT_COLLECTION_NAME,
-            force_recreate=True,
+            force_recreate=True, # Deletes and recreates the collection each time
         )
         
         return len(documents)
@@ -205,28 +171,17 @@ def chunk_and_embed_text(text: str) -> int:
 @app.get("/")
 def read_root():
     """Health check endpoint."""
-    return {
-        "status": "AI Resume Analyzer API is running",
-        "version": "2.0",
-        "features": ["Text upload", "Resume file upload", "AI analysis"]
-    }
+    return {"status": "AI Resume Analyzer API is running", "version": "2.1"}
 
-@app.post("/upload")
-async def upload(data: UploadData):
-    """
-    Endpoint for uploading, chunking, embedding, and storing text in the vector database.
-    """
+@app.post("/upload-text")
+async def upload_text(data: UploadData):
+    """Endpoint for uploading, chunking, and embedding raw text."""
     try:
         if not data.text.strip():
             raise HTTPException(status_code=400, detail="Text content cannot be empty")
         
         chunk_count = chunk_and_embed_text(data.text)
-        
-        return {
-            "message": f"Successfully processed and uploaded {chunk_count} chunks",
-            "chunks": chunk_count,
-            "status": "success"
-        }
+        return {"message": f"Successfully processed and uploaded {chunk_count} chunks", "status": "success"}
     except HTTPException:
         raise
     except Exception as e:
@@ -234,182 +189,108 @@ async def upload(data: UploadData):
 
 @app.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
-    """
-    Endpoint for uploading resume files (PDF, DOC, DOCX, TXT).
-    """
+    """Endpoint for uploading resume files (PDF, DOC, DOCX, TXT)."""
     try:
-        # Validate file
-        if not file.filename:
-            raise HTTPException(status_code=400, detail="No file uploaded")
-        
         file_ext = os.path.splitext(file.filename)[1].lower()
         if file_ext not in ALLOWED_EXTENSIONS:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
-            )
+            raise HTTPException(status_code=400, detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
         
-        # Read file content
         file_content = await file.read()
         
         if len(file_content) > MAX_FILE_SIZE:
             raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
-        
-        if len(file_content) == 0:
+        if not file_content:
             raise HTTPException(status_code=400, detail="File is empty")
         
-        # Extract text from file
         extracted_text = process_file(file_content, file.filename)
-        
         if not extracted_text.strip():
             raise HTTPException(status_code=400, detail="No text content found in the file")
         
-        # Process and store in vector database
         chunk_count = chunk_and_embed_text(extracted_text)
-        
-        return {
-            "message": f"Successfully analyzed resume '{file.filename}' and created {chunk_count} chunks",
-            "filename": file.filename,
-            "chunks": chunk_count,
-            "text_length": len(extracted_text),
-            "status": "success"
-        }
-        
+        return {"message": f"Successfully analyzed '{file.filename}' and created {chunk_count} chunks", "status": "success"}
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Resume processing failed: {str(e)}")
 
-
 @app.post("/query")
 async def query(data: QueryData):
-    """
-    Endpoint for querying the RAG pipeline with enhanced resume-specific prompts.
-    """
+    """Endpoint for querying the RAG pipeline."""
     try:
         if not data.question.strip():
             raise HTTPException(status_code=400, detail="Question cannot be empty")
-        
+
         # Initialize components
-        embeddings = CohereEmbeddings(
-            cohere_api_key=os.getenv("COHERE_API_KEY"), 
-            model="embed-english-v3.0"
-        )
-        llm = ChatGroq(
-            groq_api_key=os.getenv("GROQ_API_KEY"), 
-            model_name="llama-3.1-8b-instant", 
-            temperature=0
-        )
+        client = QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
         
-        client = QdrantClient(
-            url=os.getenv("QDRANT_URL"),
-            api_key=os.getenv("QDRANT_API_KEY"),
-        )
+        # IMPROVED: Check if the collection exists and has points before querying
+        try:
+            collection_info = client.get_collection(collection_name=QDRANT_COLLECTION_NAME)
+            if collection_info.points_count == 0:
+                raise HTTPException(status_code=404, detail="No document has been uploaded yet. Please upload a document first.")
+        except Exception:
+             raise HTTPException(status_code=404, detail="No document collection found. Please upload a document first.")
 
-        # ✅ FIX: include embeddings
-        vector_store = Qdrant(
-            client=client,
-            collection_name=QDRANT_COLLECTION_NAME,
-            embeddings=embeddings,
-        )
+        embeddings = CohereEmbeddings(cohere_api_key=os.getenv("COHERE_API_KEY"), model="embed-english-v3.0")
+        llm = ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.1-8b-instant", temperature=0)
+        reranker = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), top_n=5)
+        
+        vector_store = Qdrant(client=client, collection_name=QDRANT_COLLECTION_NAME, embeddings=embeddings)
+        retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 10})
 
-        # Reranker
-        reranker = CohereRerank(
-            cohere_api_key=os.getenv("COHERE_API_KEY"),
-            model="rerank-english-v3.0",
-            top_n=5
-        )
-
-        # Retriever
-        retriever = vector_store.as_retriever(
-            search_type="similarity",
-            search_kwargs={"k": 10}
-        )
-
-        # ✅ FIX: use compress_documents instead of invoke()
-        # retrieved_docs = retriever.get_relevant_documents(data.question)
         retrieved_docs = retriever.invoke(data.question)
-
-        reranked_docs = reranker.compress_documents(
-            documents=retrieved_docs, 
-            query=data.question
-        )
-
+        reranked_docs = reranker.compress_documents(documents=retrieved_docs, query=data.question)
+        
         if not reranked_docs:
-            raise HTTPException(
-                status_code=404, 
-                detail="No relevant content found. Please upload a document first."
-            )
+            return {"answer": "I could not find any relevant information in the document to answer your question.", "sources": []}
+
+        context_text = "\n\n".join([f"Source [{doc.metadata['position']}]:\n{doc.page_content}" for doc in reranked_docs])
         
-        # Build context
-        context_text = "\n\n".join([
-            f"[{doc.metadata['position']}] {doc.page_content}" 
-            for doc in reranked_docs
-        ])
-        
-        # Prompt
+        # IMPROVED: A more robust prompt template for better, grounded answers
         prompt_template = """
-        You are an expert HR consultant and resume analyzer...
+        You are an expert AI assistant. Your task is to answer the user's question based *only* on the provided context.
+        Follow these rules strictly:
+        1.  Analyze the provided "Context" section, which contains numbered sources.
+        2.  Formulate a clear and concise answer to the "Question".
+        3.  Base your entire answer on the information found within the context. Do not use any external knowledge.
+        4.  Cite the sources you used to construct your answer by adding the source number in brackets, like `[1]`, `[2]`, etc.
+        5.  If the answer cannot be found in the provided context, you must explicitly state: "I could not find an answer to this question in the provided document."
+
         Context:
         {context}
-        Question: {question}
+
+        Question:
+        {question}
+
         Answer:
         """
         prompt = ChatPromptTemplate.from_template(prompt_template)
         chain = prompt | llm
-        response_llm = chain.invoke({
-            "context": context_text, 
-            "question": data.question
-        })
         
-        # Sources
-        source_documents = [
-            {
-                "content": doc.page_content[:500] + "..." if len(doc.page_content) > 500 else doc.page_content,
-                "position": doc.metadata['position']
-            } 
-            for doc in reranked_docs
-        ]
+        response_llm = chain.invoke({"context": context_text, "question": data.question})
         
-        return {
-            "answer": response_llm.content,
-            "sources": source_documents,
-            "question": data.question,
-            "status": "success"
-        }
+        source_documents = [{"content": doc.page_content, "position": doc.metadata['position']} for doc in reranked_docs]
+        
+        return {"answer": response_llm.content, "sources": source_documents, "status": "success"}
 
     except COHERE_ERRORS as e:
         raise HTTPException(status_code=500, detail=f"Cohere API error: {str(e)}")
     except HTTPException:
         raise
     except Exception as e:
-        print("❌ Query failed with exception:")
-        traceback.print_exc()   # <--- this will show the real error in your terminal
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Query processing failed: {str(e)}")
+
 @app.get("/health")
 def health_check():
-    """Detailed health check endpoint."""
+    """Detailed health check for environment variables and services."""
     try:
-        # Test environment variables
         required_vars = ["COHERE_API_KEY", "GROQ_API_KEY", "QDRANT_URL", "QDRANT_API_KEY"]
         missing_vars = [var for var in required_vars if not os.getenv(var)]
         
         if missing_vars:
-            return {
-                "status": "unhealthy",
-                "error": f"Missing environment variables: {', '.join(missing_vars)}"
-            }
+            raise ValueError(f"Missing environment variables: {', '.join(missing_vars)}")
         
-        return {
-            "status": "healthy",
-            "database": "connected",
-            "ai_services": "available",
-            "file_upload": "enabled",
-            "max_file_size": f"{MAX_FILE_SIZE // 1024 // 1024}MB",
-            "supported_formats": list(ALLOWED_EXTENSIONS)
-        }
+        return {"status": "healthy", "services": "all variables present"}
     except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
+        return {"status": "unhealthy", "error": str(e)}
