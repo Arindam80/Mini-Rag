@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Modern CSS Variables --- */
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-input: #0e1628;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #a8b3cf;
+            --text-muted: #6b7280;
+            
+            --border-color: #374151;
+            --border-hover: #4b5563;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- Header Styles --- */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- Tab Navigation --- */
+        .tab-navigation {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* --- Card Styles --- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* --- Form Elements --- */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        textarea {
+            min-height: 150px;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* --- File Upload Styles --- */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: var(--bg-input);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--accent-color);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .file-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* --- Button Styles --- */
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color), #7c3aed);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- Loading States --- */
+        .btn.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn.loading .loader {
+            display: block;
+        }
+
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+        }
+
+        /* --- Status Messages --- */
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .status-loading {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* --- Results Styles --- */
+        .results-card {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--bg-card), rgba(99, 102, 241, 0.05));
+        }
+
+        .answer-section {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .sources-section h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .source-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .source-item strong {
+            color: var(--accent-color);
+            margin-right: 0.5rem;
+        }
+
+        /* --- Utility Classes --- */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* --- Resume Analysis Suggestions --- */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .suggestion-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-card:hover {
+            background: rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestion-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .tab-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🚀 AI Resume Analyzer</h1>
+            <p>Upload your resume or paste any document for intelligent AI-powered analysis and insights</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <button class="tab-button active" data-tab="document">
+                📄 Document Analysis
+            </button>
+            <button class="tab-button" data-tab="resume">
+                📋 Resume Upload
+            </button>
+        </nav>
+
+        <!-- Document Analysis Tab -->
+        <div id="document-tab" class="tab-content">
+            <div class="card">
+                <h2>📝 Paste Your Document</h2>
+                <div class="form-group">
+                    <label class="form-label">Document Text</label>
+                    <textarea id="context-text" placeholder="Paste the full text of your document here for analysis..."></textarea>
+                </div>
+                <button id="upload-btn" class="btn btn-primary">
+                    <span class="btn-text">🔄 Process & Embed Document</span>
+                    <span class="loader"></span>
+                </button>
+                <div id="upload-status" class="status-message hidden"></div>
+            </div>
+        </div>
+
+        <!-- Resume Upload Tab -->
+        <div id="resume-tab" class="tab-content hidden">
+            <div class="card">
+                <h2>📤 Upload Your Resume</h2>
+                <div class="file-upload-area" id="file-upload-area">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Drop your resume here or click to browse</div>
+                    <div class="upload-subtext">Supports PDF, DOC, DOCX, TXT files (Max 10MB)</div>
+                    <input type="file" id="resume-file" class="file-input" accept=".pdf,.doc,.docx,.txt">
+                </div>
+                <div id="file-info" class="file-info hidden">
+                    <span>📎</span>
+                    <div>
+                        <div id="file-name"></div>
+                        <div id="file-size" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+                    </div>
+                </div>
+                <button id="resume-upload-btn" class="btn btn-secondary" disabled>
+                    <span class="btn-text">🚀 Analyze Resume</span>
+                    <span class="loader"></span>
+                </button>
+                <div id="resume-status" class="status-message hidden"></div>
+
+                <!-- Resume Analysis Suggestions -->
+                <div class="suggestions-grid" id="resume-suggestions" style="display: none;">
+                    <div class="suggestion-card" data-question="Analyze the strengths and weaknesses of this resume">
+                        <div class="suggestion-title">💪 Strengths & Weaknesses</div>
+                        <div class="suggestion-desc">Get insights on what makes your resume strong and areas for improvement</div>
+                    </div>
+                    <div class="suggestion-card" data-question="What skills are highlighted in this resume?">
+                        <div class="suggestion-title">🛠️ Skills Analysis</div>
+                        <div class="suggestion-desc">Identify and evaluate the technical and soft skills mentioned</div>
+                    </div>
+                    <div class="suggestion-card" data-question="How can this resume be improved for ATS systems?">
+                        <div class="suggestion-title">🤖 ATS Optimization</div>
+                        <div class="suggestion-desc">Tips to make your resume more ATS-friendly and searchable</div>
+                    </div>
+                    <div class="suggestion-card" data-question="What job roles would this resume be suitable for?">
+                        <div class="suggestion-title">🎯 Job Matching</div>
+                        <div class="suggestion-desc">Discover which positions align best with your experience</div>
+                    </div>
+                    <div class="suggestion-card" data-question="Rate this resume out of 10 and provide specific feedback">
+                        <div class="suggestion-title">⭐ Resume Rating</div>
+                        <div class="suggestion-desc">Get a comprehensive score and detailed feedback</div>
+                    </div>
+                    <div class="suggestion-card" data-question="What are the missing elements in this resume?">
+                        <div class="suggestion-title">🔍 Gap Analysis</div>
+                        <div class="suggestion-desc">Identify missing sections or information that could strengthen your resume</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Section -->
+        <div class="card">
+            <h2>❓ Ask a Question</h2>
+            <div class="form-group">
+                <label class="form-label">Your Question</label>
+                <input type="text" id="query-input" placeholder="e.g., What is the main conclusion? or What are the key skills mentioned?">
+            </div>
+            <button id="query-btn" class="btn btn-primary">
+                <span class="btn-text">🤔 Get AI Analysis</span>
+                <span class="loader"></span>
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-container" class="card results-card hidden">
+            <h2>📊 Analysis Results</h2>
+            <div class="answer-section">
+                <div id="answer"></div>
+            </div>
+            <div class="sources-section">
+                <h3>📚 Source References</h3>
+                <div id="sources"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configuration
+            const API_BASE_URL = "http://127.0.0.1:8000";
+
+            // DOM Elements
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const uploadBtn = document.getElementById('upload-btn');
+            const queryBtn = document.getElementById('query-btn');
+            const resumeUploadBtn = document.getElementById('resume-upload-btn');
+            const uploadStatus = document.getElementById('upload-status');
+            const resumeStatus = document.getElementById('resume-status');
+            const answerDiv = document.getElementById('answer');
+            const sourcesDiv = document.getElementById('sources');
+            const resultsContainer = document.getElementById('results-container');
+            const contextText = document.getElementById('context-text');
+            const queryInput = document.getElementById('query-input');
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const resumeFileInput = document.getElementById('resume-file');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const resumeSuggestions = document.getElementById('resume-suggestions');
+            const suggestionCards = document.querySelectorAll('.suggestion-card');
+
+            let uploadedFile = null;
+            let isDocumentUploaded = false;
+
+            // Tab Navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Show/hide tab content
+                    tabContents.forEach(content => {
+                        if (content.id === `${targetTab}-tab`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // File Upload Functionality
+            fileUploadArea.addEventListener('click', () => resumeFileInput.click());
+            
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+            
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+            
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelection(files[0]);
+                }
+            });
+
+            resumeFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelection(e.target.files[0]);
+                }
+            });
+
+            function handleFileSelection(file) {
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+                
+                if (file.size > maxSize) {
+                    showStatus(resumeStatus, 'File size must be less than 10MB', 'error');
+                    return;
+                }
+                
+                if (!allowedTypes.includes(file.type)) {
+                    showStatus(resumeStatus, 'Please upload a PDF, DOC, DOCX, or TXT file', 'error');
+                    return;
+                }
+                
+                uploadedFile = file;
+                fileName.textContent = file.name;
+                fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                fileInfo.classList.remove('hidden');
+                resumeUploadBtn.disabled = false;
+                resumeStatus.classList.add('hidden');
+            }
+
+            // Helper Functions
+            function toggleButtonLoading(button, isLoading) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+
+            function showStatus(element, message, type) {
+                element.textContent = message;
+                element.className = `status-message status-${type}`;
+                element.classList.remove('hidden');
+            }
+
+            // Document Upload
+            uploadBtn.addEventListener('click', async () => {
+                const text = contextText.value.trim();
+                if (!text) {
+                    showStatus(uploadStatus, 'Please paste some text to upload.', 'error');
+                    return;
+                }
+                
+                toggleButtonLoading(uploadBtn, true);
+                showStatus(uploadStatus, 'Processing document... this may take a moment.', 'loading');
+                resultsContainer.classList.add('hidden');
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error || !response.ok) {
+                        throw new Error(result.error || `HTTP error! Status: ${response.status}`);
+                    }
+
+                    showStatus(uploadStatus, `✅ ${result.message}`, 'success');
+                    isDocumentUploaded = true;
+                } catch (error) {
+                    console.error('Upload Error:', error);
+                    showStatus(uploadStatus, `❌ Upload failed: ${error.message}`, 'error');
+                } finally {
+                    toggleButtonLoading(uploadBtn, false);
+                }
+            });
+
+            // Resume Upload
+            resumeUploadBtn.addEventListener('click', async () => {
+                if (!uploadedFile) {
+                    showStatus(resumeStatus, 'Please select a file first.', 'error');
+                    return;
+                }
+
+                toggleButtonLoading(resumeUploadBtn, true);
+                showStatus(resumeStatus, 'Analyzing resume... this may take a moment.', 'loading');
+                resultsContainer.classList.add('hidden');
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', uploadedFile);
+
+                    const response = await fetch(`${API_BASE_URL}/upload-resume`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error || !response.ok) {
+                        throw new Error(result.error || `HTTP error! Status: ${response.status}`);
+                    }
+
+                    showStatus(resumeStatus, `✅ ${result.message}`, 'success');
+                    resumeSuggestions.style.display = 'grid';
+                    isDocumentUploaded = true;
+                } catch (error) {
+                    console.error('Resume Upload Error:', error);
+                    showStatus(resumeStatus, `❌ Resume analysis failed: ${error.message}`, 'error');
+                } finally {
+                    toggleButtonLoading(resumeUploadBtn, false);
+                }
+            });
+
+            // Query Functionality
+            queryBtn.addEventListener('click', async () => {
+                const question = queryInput.value.trim();
+                if (!question) {
+                    alert('Please enter a question.');
+                    return;
+                }
+
+                if (!isDocumentUploaded) {
+                    alert('Please upload a document or resume first.');
+                    return;
+                }
+
+                toggleButtonLoading(queryBtn, true);
+                resultsContainer.classList.add('hidden');
+                answerDiv.textContent = '';
+                sourcesDiv.innerHTML = '';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/query`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question: question })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    displayResults(result);
+
+                } catch (error) {
+                    console.error('Query Error:', error);
+                    answerDiv.innerHTML = `<div class="status-error">❌ Error getting answer: ${error.message}</div>`;
+                    resultsContainer.classList.remove('hidden');
+                } finally {
+                    toggleButtonLoading(queryBtn, false);
+                }
+            });
+
+            // Suggestion Cards Click Handler
+            suggestionCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const question = card.dataset.question;
+                    queryInput.value = question;
+                    queryBtn.click();
+                });
+            });
+
+            // Display Results
+            function displayResults(result) {
+                let formattedAnswer = result.answer.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                formattedAnswer = formattedAnswer.replace(/\[(\d+)\]/g, '<strong style="color: var(--accent-color)">[$1]</strong>');
+                
+                answerDiv.innerHTML = formattedAnswer;
+
+                if (result.sources && result.sources.length > 0) {
+                    let sourcesHTML = '';
+                    result.sources.forEach(source => {
+                        const sanitizedContent = source.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        sourcesHTML += `<div class="source-item"><strong>[${source.position}]</strong> ${sanitizedContent}</div>`;
+                    });
+                    sourcesDiv.innerHTML = sourcesHTML;
+                } else {
+                    sourcesDiv.innerHTML = '<div class="source-item">No source references available.</div>';
+                }
+
+                resultsContainer.classList.remove('hidden');
+            }
+
+            // Enter key support for query input
+            queryInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !queryBtn.disabled) {
+                    queryBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
