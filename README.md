@@ -137,5 +137,5 @@ The RAG pipeline was tested on several texts to evaluate its accuracy, citation 
 
 Feel free to connect with me and explore my other projects.
 
-- **LinkedIn:** [linkedin.com/in/aditya-raj-srivastava-2570a7254/](https://linkedin.com/in/aditya-raj-srivastava-2570a7254/)
-- **GitHub:** [github.com/AditRajSrivastava](https://github.com/AditRajSrivastava)
+- **LinkedIn:** [[linkedin.com/in/aditya-raj-srivastava-2570a7254/](https://www.linkedin.com/in/arindam-mondal-305bb725b/)]
+- **GitHub:** [[github.com/Arindam80](https://github.com/Arindam80)]
