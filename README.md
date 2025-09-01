@@ -6,7 +6,31 @@
 
 📂 [GitHub Repository](https://github.com/Arindam80/Mini-Rag.git) | 👨‍💻 [My LinkedIn Profile](https://www.linkedin.com/in/arindam-mondal-305bb725b/) | 📄 [Resume Link](https://drive.google.com/file/d/18ufWn8vtKXpBXkmBFhTiHttmIBW_njOM/view?usp=drive_link)
 
-[Live Demo](https://mini-rag-five.vercel.app/)
+<div align="center">
+  <a 
+    href="https://mini-rag-five.vercel.app/" 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    style="
+      display: inline-block;
+      padding: 18px 36px;
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(45deg, #8A2BE2, #4B0082);
+      text-decoration: none;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    "
+    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)';"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)';"
+  >
+    🚀 Live Demo
+  </a>
+</div>
 ## 📋 Submission Checklist
 
 ✅ **Live URL(s):** Application running locally (instructions below)  
