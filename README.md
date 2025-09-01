@@ -16,17 +16,25 @@
       padding: 18px 36px;
       font-size: 22px;
       font-weight: bold;
-      color: white;
-      background: linear-gradient(45deg, #8A2BE2, #4B0082);
+      color: #ffffff;
+      background: linear-gradient(45deg, #7e57c2, #512da8);
       text-decoration: none;
-      border-radius: 10px;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s ease-in-out;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     "
-    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(0, 0, 0, 0.3)';"
-    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)';"
+    onmouseover="
+      this.style.transform='translateY(-3px) scale(1.05)';
+      this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.4), 0 0 10px #c792ea';
+      this.style.background='linear-gradient(45deg, #9575cd, #673ab7)';
+    "
+    onmouseout="
+      this.style.transform='translateY(0) scale(1)';
+      this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.2)';
+      this.style.background='linear-gradient(45deg, #7e57c2, #512da8)';
+    "
   >
     🚀 Live Demo
   </a>
