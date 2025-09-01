@@ -173,7 +173,7 @@ def read_root():
     """Health check endpoint."""
     return {"status": "AI Resume Analyzer API is running", "version": "2.1"}
 
-@app.post("/upload-text")
+@app.post("/upload")
 async def upload_text(data: UploadData):
     """Endpoint for uploading, chunking, and embedding raw text."""
     try:
