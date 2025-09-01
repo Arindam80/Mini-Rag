@@ -67,7 +67,7 @@ app = FastAPI(title="AI Resume Analyzer", description="Enhanced RAG system with 
 origins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    # "https://mini-rag-sepia.vercel.app",
+    "https://mini-rag-five.vercel.app/",
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
